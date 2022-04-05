@@ -65,8 +65,7 @@ services:
     image: varnish:7.0.2-alpine
     restart: unless-stopped
     volumes:
-      # - ./_sources/configs/default.vcl:/etc/varnish/default.vcl:ro
-      - ./default.vcl:/etc/varnish/default.vcl:ro
+       - ./config/default.vcl:/etc/varnish/default.vcl:ro
     tmpfs:
       - /var/lib/varnish:exec
 
