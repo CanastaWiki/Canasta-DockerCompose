@@ -15,7 +15,7 @@ services:
       - mysql-data-volume:/var/lib/mysql
 
   web:
-    image: ghcr.io/wikiworks/canasta:latest
+    image: ghcr.io/canastawiki/canasta:latest
     restart: unless-stopped
     depends_on:
       - db
