@@ -8,6 +8,7 @@ version: '3.7'
 services:
   db:
   web:
+    image: ghcr.io/canastawiki/canasta:1.35-latest
   elasticsearch:
   caddy:
   varnish:
