@@ -1,0 +1,14 @@
+version: '3.7'
+# The above version is the Docker Compose manifest's version, not the Canasta Docker Compose stack's version.
+#
+# --- Canasta Stack for Docker Compose ---
+#
+# If you need to make changes to the stack, make them here.
+# Only edits to docker-compose.override.yml are officially supported by Canasta.
+services:
+  db:
+  web:
+    image: ghcr.io/canastawiki/canasta:1.0.1-latest
+  elasticsearch:
+  caddy:
+  varnish:
