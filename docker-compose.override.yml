@@ -5,10 +5,12 @@ version: '3.7'
 #
 # If you need to make changes to the stack, make them here.
 # Only edits to docker-compose.override.yml are officially supported by Canasta.
+#
+# Uncomment the commented services and add lines below them if you would like to make additional customizations to them.
 services:
-  db:
+  #db:
   web:
     image: ghcr.io/canastawiki/canasta:1.0.1
-  elasticsearch:
-  caddy:
-  varnish:
+  #elasticsearch:
+  #caddy:
+  #varnish:
