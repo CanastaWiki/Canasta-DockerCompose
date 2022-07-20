@@ -45,7 +45,7 @@ services:
       - sitemap:/mediawiki/sitemap
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.20
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.23
     restart: unless-stopped
     environment:
       - discovery.type=single-node
