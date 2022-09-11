@@ -1,0 +1,15 @@
+version: '3.7'
+# The above version is the Docker Compose manifest's version, not the Canasta Docker Compose stack's version.
+#
+# --- Canasta Stack for Docker Compose + Traefik ---
+#
+# If you need to make changes to the stack, make them here.
+# Only edits to docker-compose.for.traefik.override.yml are officially supported by Canasta for Traefik setup.
+#
+# Uncomment the commented services and add lines below them if you would like to make additional customizations to them.
+services:
+  #db:
+  web:
+    image: ghcr.io/canastawiki/canasta:1.1.1
+  #elasticsearch:
+  #varnish:

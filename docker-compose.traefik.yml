@@ -1,0 +1,37 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.8"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.http.http.redirections.entryPoint.to=https"
+      - "--entrypoints.http.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.http.http.redirections.entrypoint.permanent=true"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - --certificatesresolvers.le.acme.email=${EMAIL?Variable not set}
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+      - "80:80"
+      # Traefik dashboar, uncommend to enable access
+      # - "8080:8080"
+    volumes:
+      - letsencrypt:/letsencrypt
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - traefik-public-compose
+
+volumes:
+  letsencrypt:
+
+networks:
+  traefik-public-compose:
+    external: true
