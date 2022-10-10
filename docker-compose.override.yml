@@ -10,7 +10,7 @@ version: '3.7'
 services:
   #db:
   web:
-    image: ghcr.io/canastawiki/canasta:1.1.2
+    image: ghcr.io/canastawiki/canasta:1.2.0
   #elasticsearch:
   #caddy:
   #varnish:
