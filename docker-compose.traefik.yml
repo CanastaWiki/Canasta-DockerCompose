@@ -5,6 +5,8 @@ services:
   traefik:
     image: "traefik:v2.8"
     container_name: "traefik"
+    environment:
+      - EMAIL
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -21,8 +23,8 @@ services:
     ports:
       - "443:443"
       - "80:80"
-      # Traefik dashboar, uncommend to enable access
-      # - "8080:8080"
+      # Traefik dashboard, uncomment to enable access
+      - "8080:8080"
     volumes:
       - letsencrypt:/letsencrypt
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
