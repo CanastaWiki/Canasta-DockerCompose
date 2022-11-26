@@ -2,3 +2,5 @@
 *
 # Except this file
 !.gitignore
+!composer.local.json
+!default.vcl

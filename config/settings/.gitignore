@@ -2,3 +2,5 @@
 *
 # Except this file
 !.gitignore
+!CanastaFooterIcon.php
+!Vector.php
