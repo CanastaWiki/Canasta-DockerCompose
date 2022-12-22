@@ -30,8 +30,6 @@ services:
     depends_on:
       - db
       - elasticsearch
-    links:
-      - db
     environment:
       # Sourced from .env
       - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
