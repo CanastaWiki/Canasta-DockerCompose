@@ -1,0 +1,3 @@
+{$MW_SITE_FQDN}
+
+reverse_proxy varnish:80

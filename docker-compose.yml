@@ -62,12 +62,15 @@ services:
   caddy:
     image: caddy:2.4.6-alpine
     restart: unless-stopped
-    entrypoint: caddy reverse-proxy --from ${MW_SITE_FQDN:-localhost} --to varnish:80
+    entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
     ports:
       - "${PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
     volumes:
       - caddy-data:/data
+      - ./config/Caddyfile:/etc/caddy/Caddyfile
 
   varnish:
     image: varnish:7.0.2-alpine
