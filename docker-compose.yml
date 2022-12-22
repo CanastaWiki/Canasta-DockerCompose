@@ -61,7 +61,7 @@ services:
   caddy:
     image: caddy:2.4.6-alpine
     restart: unless-stopped
-    entrypoint: caddy caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
     ports:
