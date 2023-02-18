@@ -23,7 +23,7 @@ services:
       - ./my.cnf:/etc/my.cnf
 
   web:
-    image: ghcr.io/canastawiki/canasta:latest
+    image: ghcr.io/canastawiki/canasta:1.2.2
     restart: unless-stopped
     extra_hosts:
       - "gateway.docker.internal:host-gateway"
@@ -46,7 +46,7 @@ services:
       - sitemap:/mediawiki/sitemap
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.23
     restart: unless-stopped
     environment:
       - discovery.type=single-node
