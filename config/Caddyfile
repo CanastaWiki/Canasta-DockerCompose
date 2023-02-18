@@ -1,0 +1,3 @@
+{$MW_SITE_FQDN}:{$HTTPS_PORT}
+
+reverse_proxy varnish:80

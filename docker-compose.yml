@@ -8,7 +8,7 @@ version: '3.7'
 # Only edits to docker-compose.override.yml are officially supported by Canasta.
 services:
   db:
-    image: mysql:8.0
+    image: docker.io/library/mysql:8.0
     command: --default-authentication-plugin=mysql_native_password --expire_logs_days=3 --secure-file-priv=""
     cap_add:
       - SYS_NICE  # CAP_SYS_NICE, fix error mbind: Operation not permitted
@@ -30,8 +30,6 @@ services:
     depends_on:
       - db
       - elasticsearch
-    links:
-      - db
     environment:
       # Sourced from .env
       - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
@@ -62,17 +60,20 @@ services:
       - elasticsearch:/usr/share/elasticsearch/data
 
   caddy:
-    image: caddy:2.4.6-alpine
+    image: docker.io/library/caddy:2.4.6-alpine
     restart: unless-stopped
-    entrypoint: caddy reverse-proxy --from ${MW_SITE_FQDN:-localhost} --to varnish:80
+    entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
     ports:
       - "${PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
     volumes:
       - caddy-data:/data
+      - ./config/Caddyfile:/etc/caddy/Caddyfile
 
   varnish:
-    image: varnish:7.0.2-alpine
+    image: docker.io/library/varnish:7.0.2-alpine
     restart: unless-stopped
     volumes:
        - ./config/default.vcl:/etc/varnish/default.vcl:ro
