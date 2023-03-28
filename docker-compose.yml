@@ -25,6 +25,7 @@ services:
   web:
     image: ghcr.io/canastawiki/canasta:latest
     restart: unless-stopped
+    init: true
     extra_hosts:
       - "gateway.docker.internal:host-gateway"
     depends_on:
@@ -71,6 +72,30 @@ services:
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
+
+  maintenance:
+    image: ghcr.io/canastawiki/canasta-maintenance:latest
+    restart: unless-stopped
+    init: true
+    extra_hosts:
+      - "gateway.docker.internal:host-gateway"
+    depends_on:
+      - db
+      - elasticsearch
+    environment:
+      # Sourced from .env
+      - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
+      - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
+      - PHP_POST_MAX_SIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
+      - PHP_MAX_INPUT_VARS=${PHP_MAX_INPUT_VARS:-1000}
+      - MW_SITEMAP_SUBDIR
+      - MW_SITEMAP_IDENTIFIER
+    volumes:
+      - ./extensions:/var/www/mediawiki/w/user-extensions
+      - ./skins:/var/www/mediawiki/w/user-skins
+      - ./config:/mediawiki/config
+      - ./images:/mediawiki/images
+      - sitemap:/mediawiki/sitemap
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
