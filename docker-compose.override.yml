@@ -12,5 +12,8 @@ services:
   web:
     image: ghcr.io/canastawiki/canasta:1.3.0
   #elasticsearch:
-  #caddy:
+  caddy:
+      ports:
+      - "${PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
   #varnish:
