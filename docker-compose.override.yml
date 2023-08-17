@@ -12,5 +12,8 @@ services:
   web:
     image: canastafarm
   #elasticsearch:
-  #caddy:
+  caddy:
+      ports:
+      - "${PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
   #varnish:

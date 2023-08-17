@@ -65,9 +65,6 @@ services:
     entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
-    ports:
-      - "${PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
