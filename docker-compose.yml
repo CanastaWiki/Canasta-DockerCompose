@@ -32,7 +32,7 @@ services:
       - elasticsearch
     environment:
       # Sourced from .env
-      - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
+      - MW_SITE_SERVER=${MW_SITE_SERVER:-https://localhost}
       - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_POST_MAX_SIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_MAX_INPUT_VARS=${PHP_MAX_INPUT_VARS:-1000}

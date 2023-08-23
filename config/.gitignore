@@ -1,5 +1,7 @@
+# Ignore everything in this directory
+*
 # Except this file
 !.gitignore
 !composer.local.json
 !default.vcl
-
+!SettingsTemplate.php
