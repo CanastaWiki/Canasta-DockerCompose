@@ -3,6 +3,6 @@
 if ( !defined( 'MEDIAWIKI' ) ) {
 	exit;
 }
-#$wgServer = "http://localhost";
+#$wgServer = "https://localhost";
 #$wgSitename = ;
 #$wgMetaNamespace = ;
