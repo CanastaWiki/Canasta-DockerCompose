@@ -9,8 +9,8 @@ version: '3.7'
 # Uncomment the commented services and add lines below them if you would like to make additional customizations to them.
 services:
   #db:
-  web:
-    image: canastafarm
+  #web:
+  #  image: ghcr.io/canastawiki/canasta:latest
   #elasticsearch:
   caddy:
       ports:
