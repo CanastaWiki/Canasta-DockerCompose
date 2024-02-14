@@ -11,6 +11,7 @@ services:
   #db:
   #web:
   #  image: ghcr.io/canastawiki/canasta:latest
+  # maintenance:
   #elasticsearch:
   caddy:
       ports:
