@@ -60,7 +60,7 @@ services:
       - elasticsearch:/usr/share/elasticsearch/data
 
   caddy:
-    image: docker.io/library/caddy:2.4.6-alpine
+    image: docker.io/library/caddy:2.8.4-alpine
     restart: unless-stopped
     entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     environment:
