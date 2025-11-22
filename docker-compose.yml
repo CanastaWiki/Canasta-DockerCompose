@@ -59,15 +59,44 @@ services:
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
 
-  caddy:
-    image: docker.io/library/caddy:2.4.6-alpine
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
     restart: unless-stopped
+    environment:
+      - COLLECTIONS=crowdsecurity/caddy
+      - BOUNCER_KEY_caddy_bouncer=${CROWDSEC_BOUNCER_API_KEY}
+    volumes:
+      - crowdsec-db:/var/lib/crowdsec/data
+      - crowdsec-config:/etc/crowdsec
+      - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
+      - caddy-logs:/var/log/caddy
+    healthcheck:
+      test:
+        - CMD
+        - cscli
+        - lapi
+        - status
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  caddy:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      crowdsec:
+        condition: service_healthy
     entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
+      - CROWDSEC_BOUNCER_API_KEY=${CROWDSEC_BOUNCER_API_KEY}
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-logs:/var/log/caddy
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
@@ -82,3 +111,6 @@ volumes:
   elasticsearch:
   caddy-data:
   sitemap:
+  crowdsec-db:
+  crowdsec-config:
+  caddy-logs:
