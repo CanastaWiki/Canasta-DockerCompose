@@ -2,6 +2,7 @@
 /.env
 /docker-compose.override.yml
 /config/*
+!/config/Caddyfile
 /extensions/*
 /skins/*
 /images/*
