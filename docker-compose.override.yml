@@ -1,5 +1,3 @@
-# The above version is the Docker Compose manifest's version, not the Canasta Docker Compose stack's version.
-#
 # --- Canasta Stack for Docker Compose ---
 #
 # If you need to make changes to the stack, make them here.
