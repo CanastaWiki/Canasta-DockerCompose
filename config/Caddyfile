@@ -1,17 +1,3 @@
-{
-	crowdsec {
-		api_url http://crowdsec:8080
-		api_key {$CROWDSEC_BOUNCER_API_KEY}
-	}
-}
+{$MW_SITE_FQDN}:{$HTTPS_PORT}
 
-{$MW_SITE_FQDN}:{$HTTPS_PORT} {
-	log {
-		output file /var/log/caddy/access.log
-	}
-
-	route {
-		crowdsec
-		reverse_proxy varnish:80
-	}
-}
+reverse_proxy varnish:80
