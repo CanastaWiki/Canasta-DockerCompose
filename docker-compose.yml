@@ -22,7 +22,7 @@ services:
       - ./my.cnf:/etc/my.cnf
 
   web:
-    image: ghcr.io/canastawiki/canasta:latest
+    image: ${CANASTA_IMAGE:-ghcr.io/canastawiki/canasta:latest}
     restart: unless-stopped
     extra_hosts:
       - "gateway.docker.internal:host-gateway"
