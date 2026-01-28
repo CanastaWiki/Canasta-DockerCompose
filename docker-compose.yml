@@ -8,7 +8,7 @@
 services:
   db:
     image: docker.io/library/mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password --expire_logs_days=3 --secure-file-priv=""
+    command: --default-authentication-plugin=mysql_native_password --expire_logs_days=3 --secure-file-priv="" --log-error=/var/log/mysql/error.log --general-log=1 --general-log-file=/var/log/mysql/general.log
     cap_add:
       - SYS_NICE  # CAP_SYS_NICE, fix error mbind: Operation not permitted
     restart: unless-stopped
@@ -19,6 +19,7 @@ services:
       - ./_initdb:/docker-entrypoint-initdb.d
       - mysql-data-volume:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf
+      - mysql-logs:/var/log/mysql
 
   web:
     image: ${CANASTA_IMAGE:-ghcr.io/canastawiki/canasta:latest}
@@ -42,6 +43,7 @@ services:
       - ./config:/mediawiki/config
       - ./images:/mediawiki/images
       - ./public_assets:/mediawiki/public_assets
+      - mediawiki-logs:/var/log/mediawiki
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
@@ -66,11 +68,14 @@ services:
       - "${HTTPS_PORT:-443}:443"
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
+      - OS_USER=${OS_USER:-admin}
+      - OS_PASSWORD_HASH=${OS_PASSWORD_HASH:-$$2a$$14$$jSEuWj28frTLdhwx70nl5uIwrQ//MFbHj.vpGR3Xj3McwIGO9v71i}
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
       - ./config/Caddyfile.site:/etc/caddy/Caddyfile.site
       - ./config/Caddyfile.global:/etc/caddy/Caddyfile.global
+      - caddy-logs:/var/log/caddy
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
@@ -83,7 +88,61 @@ services:
     tmpfs:
       - /var/lib/varnish:exec
 
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    profiles:
+      - observable
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+
+  logstash:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.9.0
+    user: root
+    profiles:
+      - observable
+    restart: unless-stopped
+    depends_on:
+      - opensearch
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - mediawiki-logs:/var/log/mediawiki:ro
+      - caddy-logs:/var/log/caddy:ro
+      - mysql-logs:/var/log/mysql:ro
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.1
+    profiles:
+      - observable
+    restart: unless-stopped
+    ports:
+      - "${OS_PORT:-5601}:5601"
+    depends_on:
+      - opensearch
+    environment:
+      - OPENSEARCH_HOSTS=http://opensearch:9200
+      - SERVER_BASEPATH=/opensearch
+      - SERVER_REWRITEBASEPATH=false
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+
 volumes:
   mysql-data-volume:
   elasticsearch:
   caddy-data:
+  opensearch-data:
+  mediawiki-logs:
+  caddy-logs:
+  mysql-logs:
