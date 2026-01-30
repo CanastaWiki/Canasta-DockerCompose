@@ -6,8 +6,6 @@
    - `OS_PORT`
    - `OS_USER`
    - `OS_PASSWORD_HASH`
-  
-Note: Default username is set to **admin** and password is set to **password**. 
 
 2. Start the stack with the observability profile:
 
@@ -22,37 +20,10 @@ Note: Default username is set to **admin** and password is set to **password**.
    docker compose up -d
    ```
 
-## Expose OpenSearch Dashboards via Caddy
-
-Edit [config/Caddyfile](config/Caddyfile) to proxy `/opensearch` to the Dashboards container and protect it with basic auth. Use the following structure (matches the reference configuration):
-
-```caddyfile
-{$MW_SITE_FQDN}:{$HTTPS_PORT}
-
-reverse_proxy varnish:80
-
-handle_path /opensearch/* {
-    basicauth {
-        {$OS_USER} {$OS_PASSWORD_HASH}
-    }
-    reverse_proxy opensearch-dashboards:5601
-}
-
-log {
-    output file /var/log/caddy/access.log
-}
-```
-
-Apply the change:
-
-```bash
-docker compose restart caddy
-```
-
 ## Open OpenSearch Dashboards
 
 - URL: `https://<MW_SITE_FQDN>/opensearch`
-- Login: use the `OS_USER` and the plain text password that matches `OS_PASSWORD_HASH`.
+- Login: use the `OS_USER` and the plain text password `OS_PASSWORD` in your .env file.
 
 ## Enable MediaWiki logging
 
