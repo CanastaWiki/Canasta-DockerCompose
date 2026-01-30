@@ -68,8 +68,6 @@ services:
       - "${HTTPS_PORT:-443}:443"
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
-      - OS_USER=${OS_USER:-admin}
-      - OS_PASSWORD_HASH=${OS_PASSWORD_HASH:-$$2a$$14$$jSEuWj28frTLdhwx70nl5uIwrQ//MFbHj.vpGR3Xj3McwIGO9v71i}
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
@@ -137,6 +135,17 @@ services:
       - SERVER_BASEPATH=/opensearch
       - SERVER_REWRITEBASEPATH=false
       - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+
+  observable-caddy-init:
+    image: docker.io/library/caddy:2.8.4-alpine
+    profiles:
+      - observable
+    restart: "no"
+    environment:
+      - OS_USER
+    volumes:
+      - ./:/work
+    entrypoint: /bin/sh /work/scripts/observable-caddy-init.sh
 
 volumes:
   mysql-data-volume:
