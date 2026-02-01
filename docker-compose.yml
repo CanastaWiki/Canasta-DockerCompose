@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_HOST=%
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD:-mediawiki}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=mediawiki
     volumes:
       - ./_initdb:/docker-entrypoint-initdb.d
@@ -33,7 +33,7 @@ services:
       # Sourced from .env
       - MW_SITE_SERVER=${MW_SITE_SERVER:-https://localhost}
       - MW_SECRET_KEY=${MW_SECRET_KEY}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-mediawiki}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_POST_MAX_SIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_MAX_INPUT_VARS=${PHP_MAX_INPUT_VARS:-1000}
