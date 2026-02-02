@@ -5,6 +5,9 @@
 # This file contains settings specific to this wiki.
 # It is loaded after global settings and can override them.
 #
+# NOTE: All .php files in this wiki's directory are automatically loaded in
+# alphabetical order. You can organize settings into multiple files.
+#
 # DO NOT set these variables here (they are set automatically from wikis.yaml):
 #   - $wgDBname
 #   - $wgServer
