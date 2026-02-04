@@ -72,6 +72,7 @@ services:
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
+      - ./config/Caddyfile.custom:/etc/caddy/Caddyfile.custom
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
