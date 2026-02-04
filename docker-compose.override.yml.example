@@ -1,0 +1,14 @@
+# --- Canasta Stack for Docker Compose ---
+#
+# Copy this file to docker-compose.override.yml to customize the stack.
+# Docker Compose automatically merges docker-compose.override.yml with
+# docker-compose.yml when present.
+#
+# Uncomment and modify the services below as needed.
+services:
+  #db:
+  #web:
+  #  image: ghcr.io/canastawiki/canasta:latest
+  #elasticsearch:
+  #caddy:
+  #varnish:
