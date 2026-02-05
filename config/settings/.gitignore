@@ -1,6 +1,8 @@
 # Ignore everything in this directory
 *
-# Except this file
+# Except these
 !.gitignore
-!CanastaFooterIcon.php
-!Vector.php
+!global/
+!global/*
+!wikis/
+!wikis/.gitkeep
