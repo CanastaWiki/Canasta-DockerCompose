@@ -3,6 +3,8 @@
 # Except this file
 !.gitignore
 !composer.local.json
+!Caddyfile
 !Caddyfile.custom
+!Caddyfile.global
 !default.vcl
 !SettingsTemplate.php

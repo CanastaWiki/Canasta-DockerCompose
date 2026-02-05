@@ -1,0 +1,9 @@
+# Global Caddy options for this Canasta installation.
+# This file is imported inside the global options block of the
+# auto-generated Caddyfile and is not overwritten by the CLI.
+#
+# Add global Caddy directives below. For example, to disable
+# automatic HTTPS (when SSL is terminated by an upstream proxy):
+#   auto_https off
+#
+# See https://caddyserver.com/docs/caddyfile/options for available options.
