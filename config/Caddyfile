@@ -1,3 +1,4 @@
-{$MW_SITE_FQDN}:{$HTTPS_PORT}
-
-reverse_proxy varnish:80
+{$MW_SITE_FQDN} {
+    import /etc/caddy/Caddyfile.custom
+    reverse_proxy varnish:80
+}

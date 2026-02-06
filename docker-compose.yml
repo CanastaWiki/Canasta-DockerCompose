@@ -73,10 +73,14 @@ services:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
       - ./config/Caddyfile.custom:/etc/caddy/Caddyfile.custom
+      - ./config/Caddyfile.global:/etc/caddy/Caddyfile.global
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
     restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
     volumes:
        - ./config/default.vcl:/etc/varnish/default.vcl:ro
     tmpfs:
