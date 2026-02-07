@@ -1,4 +1,11 @@
 {$MW_SITE_FQDN} {
     import /etc/caddy/Caddyfile.custom
-    reverse_proxy varnish:80
+
+    handle {
+        reverse_proxy varnish:80
+    }
+
+    log {
+        output file /var/log/caddy/access.log
+    }
 }

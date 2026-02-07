@@ -1,5 +1,5 @@
 # Ignore everything in this directory
-*
+/*
 # Except this file
 !.gitignore
 !composer.local.json
@@ -8,3 +8,4 @@
 !Caddyfile.global
 !default.vcl
 !SettingsTemplate.php
+!logstash
