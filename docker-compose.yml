@@ -85,10 +85,14 @@ services:
       - ./.env:/etc/caddy/.env
       - ./scripts/caddy-entrypoint.sh:/etc/caddy/scripts/caddy-entrypoint.sh:ro
       - ./scripts/observable-interface-init.sh:/etc/caddy/scripts/observable-interface-init.sh:ro
+      - ./config/Caddyfile.global:/etc/caddy/Caddyfile.global
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
     restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
     volumes:
        - ./config/default.vcl:/etc/varnish/default.vcl:ro
     tmpfs:
