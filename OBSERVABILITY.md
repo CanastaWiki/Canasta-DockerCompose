@@ -2,10 +2,7 @@
 
 ## Enable the observability profile
 
-1. Ensure your `.env` contains values for OpenSearch Dashboards access:
-   - `OS_PORT`
-   - `OS_USER`
-   - `OS_PASSWORD_HASH`
+1. Ensure your `.env` contains a value for `OS_USER` (the username for OpenSearch Dashboards access). `OS_PASSWORD` will be auto-generated on first run if not already set.
 
 2. Start the stack with the observability profile:
 
@@ -20,10 +17,16 @@
    docker compose up -d
    ```
 
+3. After the first run, restart Caddy so it picks up the generated OpenSearch Dashboards route:
+
+   ```bash
+   docker compose restart caddy
+   ```
+
 ## Open OpenSearch Dashboards
 
 - URL: `https://<MW_SITE_FQDN>/opensearch`
-- Login: use the `OS_USER` and the plain text password `OS_PASSWORD` in your .env file.
+- Login: use the `OS_USER` and the plain-text `OS_PASSWORD` from your `.env` file.
 
 ## Enable MediaWiki logging
 
@@ -46,6 +49,19 @@ docker compose restart web
 ```
 
 ## Create index patterns (Dashboards)
+
+Index patterns are created automatically by the `observable-interface-init` container
+when the observability profile starts. It waits for OpenSearch Dashboards and at
+least one log index to exist, then creates:
+
+- `mediawiki-logs-*`
+- `caddy-logs-*`
+- `mysql-logs-*`
+
+The default index pattern is set to `mediawiki-logs-*`.
+
+If automatic creation fails (check `docker compose logs observable-interface-init`),
+you can create them manually:
 
 1. Open **OpenSearch Dashboards** → **Dashboards Management** → **Index Patterns**.
 2. Create the following patterns (one at a time):
