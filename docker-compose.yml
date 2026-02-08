@@ -44,6 +44,7 @@ services:
       - ./skins:/var/www/mediawiki/w/user-skins
       - ./config:/mediawiki/config
       - ./images:/mediawiki/images
+      - ./public_assets:/mediawiki/public_assets
       - sitemap:/mediawiki/sitemap
 
   elasticsearch:

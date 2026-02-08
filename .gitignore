@@ -5,3 +5,5 @@
 /extensions/*
 /skins/*
 /images/*
+/public_assets/*
+!/public_assets/.gitkeep
