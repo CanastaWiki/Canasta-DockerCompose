@@ -1,3 +1,7 @@
+{
+    import /etc/caddy/Caddyfile.global
+}
+
 {$MW_SITE_FQDN} {
     import /etc/caddy/Caddyfile.custom
     reverse_proxy varnish:80
