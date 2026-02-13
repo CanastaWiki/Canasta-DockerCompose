@@ -2,7 +2,6 @@
 *
 # Except this file
 !.gitignore
-!composer.local.json
 !Caddyfile
 !Caddyfile.custom
 !Caddyfile.global
