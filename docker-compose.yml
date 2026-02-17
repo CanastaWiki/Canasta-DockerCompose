@@ -15,7 +15,6 @@ services:
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=mediawiki
     volumes:
       - ./_initdb:/docker-entrypoint-initdb.d
       - mysql-data-volume:/var/lib/mysql
