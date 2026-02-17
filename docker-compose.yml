@@ -45,7 +45,7 @@ services:
       - ./config:/mediawiki/config
       - ./images:/mediawiki/images
       - ./public_assets:/mediawiki/public_assets
-      - sitemap:/mediawiki/sitemap
+      - ./sitemap:/mediawiki/sitemap
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
