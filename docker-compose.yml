@@ -36,15 +36,12 @@ services:
       - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_POST_MAX_SIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
       - PHP_MAX_INPUT_VARS=${PHP_MAX_INPUT_VARS:-1000}
-      - MW_SITEMAP_SUBDIR
-      - MW_SITEMAP_IDENTIFIER
     volumes:
       - ./extensions:/var/www/mediawiki/w/user-extensions
       - ./skins:/var/www/mediawiki/w/user-skins
       - ./config:/mediawiki/config
       - ./images:/mediawiki/images
       - ./public_assets:/mediawiki/public_assets
-      - ./sitemap:/mediawiki/sitemap
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
@@ -90,4 +87,3 @@ volumes:
   mysql-data-volume:
   elasticsearch:
   caddy-data:
-  sitemap:
