@@ -4,13 +4,6 @@
 #
 # You can add a global options block, extra site blocks, or both.
 #
-# Example — disable automatic HTTPS (when SSL is terminated by an
-# upstream reverse proxy such as nginx, Cloudflare, or a load balancer):
-#
-#   {
-#       auto_https off
-#   }
-#
 # Example — redirect www to non-www:
 #
 #   www.example.com {
