@@ -69,7 +69,7 @@ services:
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
-      - ./config/Caddyfile.custom:/etc/caddy/Caddyfile.custom
+      - ./config/Caddyfile.site:/etc/caddy/Caddyfile.site
       - ./config/Caddyfile.global:/etc/caddy/Caddyfile.global
 
   varnish:

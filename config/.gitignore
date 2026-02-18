@@ -2,8 +2,5 @@
 *
 # Except this file
 !.gitignore
-!Caddyfile
-!Caddyfile.custom
-!Caddyfile.global
 !default.vcl
 !SettingsTemplate.php

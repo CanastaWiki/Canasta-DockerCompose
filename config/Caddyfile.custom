@@ -1,9 +1,0 @@
-# Custom Caddy configuration for this Canasta installation.
-# This file is imported by the auto-generated Caddyfile and is
-# not overwritten when wikis are added or removed.
-#
-# Add your custom Caddy directives below. For example:
-#   header X-Frame-Options "SAMEORIGIN"
-#   header X-Content-Type-Options "nosniff"
-#
-# See https://caddyserver.com/docs/caddyfile/directives for available directives.
