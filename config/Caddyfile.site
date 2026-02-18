@@ -1,6 +1,6 @@
-# Custom Caddy configuration for this Canasta installation.
-# This file is imported by the auto-generated Caddyfile and is
-# not overwritten when wikis are added or removed.
+# Site-level Caddy configuration for this Canasta installation.
+# This file is imported inside the site block of the auto-generated
+# Caddyfile and is not overwritten by the CLI or by upgrades.
 #
 # Add your custom Caddy directives below. For example:
 #   header X-Frame-Options "SAMEORIGIN"
