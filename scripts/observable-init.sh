@@ -10,6 +10,7 @@ MAX_WAIT=120          # seconds to wait for Dashboards API
 RETRY_INTERVAL=5      # seconds between retries
 INDEX_WAIT=60         # seconds to wait for indices after Dashboards is up
 INDEX_RETRY=10        # seconds between index checks
+RETRY_DELAY=60        # seconds to wait before retrying missed patterns
 
 PATTERNS="mediawiki-logs-* caddy-logs-* mysql-logs-*"
 
@@ -47,39 +48,63 @@ if [ "$elapsed" -ge "$INDEX_WAIT" ]; then
 fi
 
 # ---------- create index patterns only for existing indices ----------
-# Re-fetch current indices
+# Creates patterns for indices that exist, returns the number of patterns skipped.
+create_patterns() {
+  indices="$(wget -qO- 'http://opensearch:9200/_cat/indices?h=index' 2>/dev/null || true)"
+  skipped=0
+
+  for pattern in $PATTERNS; do
+    prefix="${pattern%\*}"
+    if ! echo "$indices" | grep -q "^${prefix}"; then
+      echo "Skipping index pattern ${pattern} (no matching index yet)"
+      skipped=$((skipped + 1))
+      continue
+    fi
+
+    echo "Creating index pattern: ${pattern}"
+    response="$(wget -qO- \
+      --header='Content-Type: application/json' \
+      --header='osd-xsrf: true' \
+      --post-data="{\"attributes\":{\"title\":\"${pattern}\",\"timeFieldName\":\"@timestamp\"}}" \
+      "${DASHBOARDS_URL}/api/saved_objects/index-pattern/${pattern}" 2>&1 || true)"
+
+    if echo "$response" | grep -q '"type":"index-pattern"'; then
+      echo "  Created ${pattern}"
+    elif echo "$response" | grep -qi 'already exists\|409 Conflict'; then
+      echo "  ${pattern} already exists, skipping."
+    else
+      echo "  Unexpected response for ${pattern}: ${response}"
+    fi
+  done
+
+  return "$skipped"
+}
+
+# First pass
+echo "Creating index patterns (pass 1)..."
+skipped=0
+create_patterns || skipped=$?
+
+# Retry if any patterns were skipped
+if [ "$skipped" -gt 0 ]; then
+  echo "Retrying ${skipped} skipped pattern(s) in ${RETRY_DELAY}s..."
+  sleep "$RETRY_DELAY"
+  echo "Creating index patterns (pass 2)..."
+  create_patterns || true
+fi
+
+# ---------- set default index pattern ----------
+# Pick the first pattern that has a matching index
 indices="$(wget -qO- 'http://opensearch:9200/_cat/indices?h=index' 2>/dev/null || true)"
 default_pattern=""
-
 for pattern in $PATTERNS; do
   prefix="${pattern%\*}"
-  if ! echo "$indices" | grep -q "^${prefix}"; then
-    echo "Skipping index pattern ${pattern} (no matching index yet)"
-    continue
-  fi
-
-  echo "Creating index pattern: ${pattern}"
-  response="$(wget -qO- \
-    --header='Content-Type: application/json' \
-    --header='osd-xsrf: true' \
-    --post-data="{\"attributes\":{\"title\":\"${pattern}\",\"timeFieldName\":\"@timestamp\"}}" \
-    "${DASHBOARDS_URL}/api/saved_objects/index-pattern/${pattern}" 2>&1 || true)"
-
-  if echo "$response" | grep -q '"type":"index-pattern"'; then
-    echo "  Created ${pattern}"
-  elif echo "$response" | grep -qi 'already exists\|409 Conflict'; then
-    echo "  ${pattern} already exists, skipping."
-  else
-    echo "  Unexpected response for ${pattern}: ${response}"
-  fi
-
-  # Use the first successfully created/existing pattern as default
-  if [ -z "$default_pattern" ]; then
+  if echo "$indices" | grep -q "^${prefix}"; then
     default_pattern="$pattern"
+    break
   fi
 done
 
-# ---------- set default index pattern ----------
 if [ -n "$default_pattern" ]; then
   echo "Setting default index pattern to ${default_pattern}..."
   wget -qO- \
@@ -88,7 +113,7 @@ if [ -n "$default_pattern" ]; then
     --post-data="{\"value\":\"${default_pattern}\"}" \
     "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultIndex" > /dev/null 2>&1 || true
 else
-  echo "No index patterns created, skipping default index pattern."
+  echo "No matching indices found, skipping default index pattern."
 fi
 
 # ---------- configure Dashboards settings ----------
