@@ -34,14 +34,8 @@ echo "Waiting for log indices to be created by Logstash..."
 elapsed=0
 while [ "$elapsed" -lt "$INDEX_WAIT" ]; do
   indices="$(wget -qO- 'http://opensearch:9200/_cat/indices?h=index' 2>/dev/null || true)"
-  for p in $PATTERNS; do
-    prefix="${p%\*}"
-    if echo "$indices" | grep -q "^${prefix}"; then
-      echo "Found index matching ${p}"
-    fi
-  done
   if echo "$indices" | grep -qE "^(mediawiki-logs-|caddy-logs-|mysql-logs-)"; then
-    echo "At least one log index exists – creating index patterns."
+    echo "At least one log index exists."
     break
   fi
   sleep "$INDEX_RETRY"
@@ -49,19 +43,27 @@ while [ "$elapsed" -lt "$INDEX_WAIT" ]; do
 done
 
 if [ "$elapsed" -ge "$INDEX_WAIT" ]; then
-  echo "WARNING: No log indices found within ${INDEX_WAIT}s – creating patterns anyway."
+  echo "WARNING: No log indices found within ${INDEX_WAIT}s."
 fi
 
-# ---------- create index patterns ----------
-for pattern in $PATTERNS; do
-  id="$pattern"
-  echo "Creating index pattern: ${pattern}"
+# ---------- create index patterns only for existing indices ----------
+# Re-fetch current indices
+indices="$(wget -qO- 'http://opensearch:9200/_cat/indices?h=index' 2>/dev/null || true)"
+default_pattern=""
 
+for pattern in $PATTERNS; do
+  prefix="${pattern%\*}"
+  if ! echo "$indices" | grep -q "^${prefix}"; then
+    echo "Skipping index pattern ${pattern} (no matching index yet)"
+    continue
+  fi
+
+  echo "Creating index pattern: ${pattern}"
   response="$(wget -qO- \
     --header='Content-Type: application/json' \
     --header='osd-xsrf: true' \
     --post-data="{\"attributes\":{\"title\":\"${pattern}\",\"timeFieldName\":\"@timestamp\"}}" \
-    "${DASHBOARDS_URL}/api/saved_objects/index-pattern/${id}" 2>&1 || true)"
+    "${DASHBOARDS_URL}/api/saved_objects/index-pattern/${pattern}" 2>&1 || true)"
 
   if echo "$response" | grep -q '"type":"index-pattern"'; then
     echo "  Created ${pattern}"
@@ -70,16 +72,24 @@ for pattern in $PATTERNS; do
   else
     echo "  Unexpected response for ${pattern}: ${response}"
   fi
+
+  # Use the first successfully created/existing pattern as default
+  if [ -z "$default_pattern" ]; then
+    default_pattern="$pattern"
+  fi
 done
 
 # ---------- set default index pattern ----------
-default_pattern="mediawiki-logs-*"
-echo "Setting default index pattern to ${default_pattern}..."
-wget -qO- \
-  --header='Content-Type: application/json' \
-  --header='osd-xsrf: true' \
-  --post-data="{\"value\":\"${default_pattern}\"}" \
-  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultIndex" 2>&1 || true
+if [ -n "$default_pattern" ]; then
+  echo "Setting default index pattern to ${default_pattern}..."
+  wget -qO- \
+    --header='Content-Type: application/json' \
+    --header='osd-xsrf: true' \
+    --post-data="{\"value\":\"${default_pattern}\"}" \
+    "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultIndex" > /dev/null 2>&1 || true
+else
+  echo "No index patterns created, skipping default index pattern."
+fi
 
 # ---------- configure Dashboards settings ----------
 echo "Configuring Dashboards settings..."
@@ -89,20 +99,20 @@ wget -qO- \
   --header='Content-Type: application/json' \
   --header='osd-xsrf: true' \
   --post-data='{"value":"/app/discover"}' \
-  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultRoute" 2>&1 || true
+  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultRoute" > /dev/null 2>&1 || true
 
 echo "  Setting default time range to last 24h..."
 wget -qO- \
   --header='Content-Type: application/json' \
   --header='osd-xsrf: true' \
   --post-data='{"value":"{\"from\":\"now-24h\",\"to\":\"now\"}"}' \
-  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/timepicker:timeDefaults" 2>&1 || true
+  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/timepicker:timeDefaults" > /dev/null 2>&1 || true
 
 echo "  Setting timezone to UTC..."
 wget -qO- \
   --header='Content-Type: application/json' \
   --header='osd-xsrf: true' \
   --post-data='{"value":"UTC"}' \
-  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/dateFormat:tz" 2>&1 || true
+  "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/dateFormat:tz" > /dev/null 2>&1 || true
 
 echo "Dashboards configuration complete."
