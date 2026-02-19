@@ -1,52 +1,9 @@
 #!/bin/sh
+# One-shot init container: creates OpenSearch Dashboards index patterns
+# and configures default settings. Runs only when the observable profile
+# is active. Credential generation and Caddyfile configuration are
+# handled by the Canasta CLI.
 set -eu
-
-ENV_FILE="/etc/caddy/.env"
-CADDYFILE_CUSTOM="/etc/caddy/Caddyfile.custom"
-
-get_env() {
-  grep -m 1 "^$1=" "$ENV_FILE" | cut -d= -f2-
-}
-
-OS_USER_VALUE="${OS_USER:-}"
-if [ -z "$OS_USER_VALUE" ]; then
-  OS_USER_VALUE="$(get_env OS_USER || true)"
-fi
-
-if [ -z "$OS_USER_VALUE" ]; then
-  echo "OS_USER is required (set in .env or environment)." >&2
-  exit 1
-fi
-
-if grep -q "^OS_PASSWORD=" "$ENV_FILE"; then
-  OS_PASSWORD="$(get_env OS_PASSWORD)"
-else
-  OS_PASSWORD="$(head -c 24 /dev/urandom | base64 | tr -d '\n')"
-  # Append to .env; ensure we start on a new line
-  [ -s "$ENV_FILE" ] && [ "$(tail -c 1 "$ENV_FILE")" != "" ] && echo >> "$ENV_FILE"
-  echo "OS_PASSWORD=${OS_PASSWORD}" >> "$ENV_FILE"
-fi
-
-OS_PASSWORD_HASH="$(caddy hash-password --plaintext "$OS_PASSWORD")"
-
-if ! grep -q "handle.*/opensearch" "$CADDYFILE_CUSTOM"; then
-  cat >> "$CADDYFILE_CUSTOM" <<EOF
-
-handle /opensearch/* {
-    basicauth {
-        ${OS_USER_VALUE} ${OS_PASSWORD_HASH}
-    }
-    reverse_proxy opensearch-dashboards:5601
-}
-EOF
-  echo "OpenSearch Dashboards route added to Caddyfile.custom."
-else
-  echo "OpenSearch Dashboards route already exists in Caddyfile.custom, skipping."
-fi
-
-# ============================================================
-# Phase 2: Create OpenSearch Dashboards index patterns
-# ============================================================
 
 DASHBOARDS_URL="http://opensearch-dashboards:5601/opensearch"
 MAX_WAIT=120          # seconds to wait for Dashboards API
@@ -107,11 +64,11 @@ for pattern in $PATTERNS; do
     "${DASHBOARDS_URL}/api/saved_objects/index-pattern/${id}" 2>&1 || true)"
 
   if echo "$response" | grep -q '"type":"index-pattern"'; then
-    echo "  ✓ Created ${pattern}"
+    echo "  Created ${pattern}"
   elif echo "$response" | grep -qi 'already exists\|409 Conflict'; then
-    echo "  - ${pattern} already exists, skipping."
+    echo "  ${pattern} already exists, skipping."
   else
-    echo "  ! Unexpected response for ${pattern}: ${response}"
+    echo "  Unexpected response for ${pattern}: ${response}"
   fi
 done
 
@@ -127,7 +84,6 @@ wget -qO- \
 # ---------- configure Dashboards settings ----------
 echo "Configuring Dashboards settings..."
 
-# Set Discover (logs view) as the homepage
 echo "  Setting Discover as homepage..."
 wget -qO- \
   --header='Content-Type: application/json' \
@@ -135,7 +91,6 @@ wget -qO- \
   --post-data='{"value":"/app/discover"}' \
   "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/defaultRoute" 2>&1 || true
 
-# Set default time range to last 24 hours
 echo "  Setting default time range to last 24h..."
 wget -qO- \
   --header='Content-Type: application/json' \
@@ -143,7 +98,6 @@ wget -qO- \
   --post-data='{"value":"{\"from\":\"now-24h\",\"to\":\"now\"}"}' \
   "${DASHBOARDS_URL}/api/opensearch-dashboards/settings/timepicker:timeDefaults" 2>&1 || true
 
-# Set timezone to UTC (universally safe; users can change in Dashboards settings)
 echo "  Setting timezone to UTC..."
 wget -qO- \
   --header='Content-Type: application/json' \

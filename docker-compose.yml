@@ -67,22 +67,17 @@ services:
   caddy:
     image: docker.io/library/caddy:2.10.2-alpine
     restart: unless-stopped
-    entrypoint: /bin/sh /etc/caddy/scripts/caddy-entrypoint.sh
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
     environment:
       - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
-      - OS_USER=${OS_USER:-}
     volumes:
       - caddy-data:/data
       - ./config/Caddyfile:/etc/caddy/Caddyfile
       - ./config/Caddyfile.site:/etc/caddy/Caddyfile.site
       - ./config/Caddyfile.global:/etc/caddy/Caddyfile.global
       - caddy-logs:/var/log/caddy
-      - ./.env:/etc/caddy/.env
-      - ./scripts/caddy-entrypoint.sh:/etc/caddy/scripts/caddy-entrypoint.sh:ro
-      - ./scripts/observable-interface-init.sh:/etc/caddy/scripts/observable-interface-init.sh:ro
 
   varnish:
     image: docker.io/library/varnish:7.0.2-alpine
@@ -137,8 +132,6 @@ services:
     profiles:
       - observable
     restart: unless-stopped
-    ports:
-      - "${OS_PORT:-5601}:5601"
     depends_on:
       - opensearch
     environment:
@@ -146,6 +139,18 @@ services:
       - SERVER_BASEPATH=/opensearch
       - SERVER_REWRITEBASEPATH=true
       - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+
+  observable-init:
+    image: docker.io/library/alpine:3.21
+    profiles:
+      - observable
+    restart: "no"
+    depends_on:
+      - opensearch
+      - opensearch-dashboards
+    volumes:
+      - ./scripts/observable-init.sh:/observable-init.sh:ro
+    entrypoint: /bin/sh /observable-init.sh
 
 volumes:
   mysql-data-volume:
