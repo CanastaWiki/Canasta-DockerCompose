@@ -13,7 +13,7 @@ services:
         chown -R mysql:mysql /var/log/mysql &&
         exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password --expire_logs_days=3 --secure-file-priv='' --log-error=/var/log/mysql/error.log
       "
-    user: root
+    user: root  # Required so the entrypoint can chown /var/log/mysql before dropping to mysql
     cap_add:
       - SYS_NICE  # CAP_SYS_NICE, fix error mbind: Operation not permitted
     restart: unless-stopped

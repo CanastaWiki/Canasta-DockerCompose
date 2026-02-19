@@ -2,38 +2,30 @@
 
 ## Enable the observability profile
 
-1. Ensure your `.env` contains a value for `OS_USER` (the username for OpenSearch Dashboards access). `OS_PASSWORD` will be auto-generated on first run if not already set.
+Add `COMPOSE_PROFILES=observable` to your `.env` file (or append `,observable`
+to an existing `COMPOSE_PROFILES` value), then run:
 
-2. Start the stack with the observability profile:
+```bash
+canasta create ...          # for new installations
+canasta upgrade -i <id>     # for existing installations
+```
 
-   ```bash
-   docker compose --profile observable up -d
-   ```
-
-   Tip: to make the profile the default for future runs, set:
-
-   ```bash
-   export COMPOSE_PROFILES=observable
-   docker compose up -d
-   ```
-
-3. After the first run, restart Caddy so it picks up the generated OpenSearch Dashboards route:
-
-   ```bash
-   docker compose restart caddy
-   ```
+The CLI automatically:
+- Generates `OS_USER`, `OS_PASSWORD`, and `OS_PASSWORD_HASH` in `.env`
+- Adds the OpenSearch Dashboards reverse proxy block to the Caddyfile
 
 ## Open OpenSearch Dashboards
 
-- URL: `https://<MW_SITE_FQDN>/opensearch`
-- Login: use the `OS_USER` and the plain-text `OS_PASSWORD` from your `.env` file.
+- URL: `https://<your-domain>/opensearch`
+- Login: use `OS_USER` and the plain-text `OS_PASSWORD` from your `.env` file.
 
 ## Enable MediaWiki logging
 
-By default, MediaWiki does not write log files. Add the following to `config/LocalSettings.php`:
+By default, MediaWiki does not write log files. Add the following to
+`config/settings/global/Logging.php` (or your per-wiki settings):
 
 ```php
-# Logging configuration for observability
+<?php
 $wgDebugLogFile = "/var/log/mediawiki/debug.log";
 $wgDBerrorLog = "/var/log/mediawiki/dberror.log";
 $wgDebugLogGroups = [
@@ -45,40 +37,47 @@ $wgDebugLogGroups = [
 Then restart the web container:
 
 ```bash
-docker compose restart web
+canasta restart -i <id>
 ```
 
-## Create index patterns (Dashboards)
+Without this configuration, only Caddy access logs and MySQL logs will appear
+in Dashboards. The `mediawiki-logs-*` index pattern will be created
+automatically once MediaWiki log files exist.
 
-Index patterns are created automatically by the `observable-interface-init` container
-when the observability profile starts. It waits for OpenSearch Dashboards and at
-least one log index to exist, then creates:
+## Index patterns
 
-- `mediawiki-logs-*`
-- `caddy-logs-*`
-- `mysql-logs-*`
+Index patterns are created automatically by the `observable-init` container
+when the observability profile starts. It waits for OpenSearch Dashboards and
+at least one log index to exist, then creates patterns for each available
+index. A second pass runs 60 seconds later to catch late-arriving indices.
 
-The default index pattern is set to `mediawiki-logs-*`.
+If automatic creation fails (check `docker logs <id>-observable-init-1`),
+you can create patterns manually:
 
-If automatic creation fails (check `docker compose logs observable-interface-init`),
-you can create them manually:
-
-1. Open **OpenSearch Dashboards** → **Dashboards Management** → **Index Patterns**.
-2. Create the following patterns (one at a time):
-   - `mediawiki-logs-*`
+1. Open **OpenSearch Dashboards** > **Stack Management** > **Index Patterns**.
+2. Create patterns for the indices that exist:
    - `caddy-logs-*`
    - `mysql-logs-*`
-3. When prompted for a time field, pick `@timestamp` if available; otherwise use the suggested timestamp field or skip if none exists.
+   - `mediawiki-logs-*` (only if MediaWiki logging is enabled)
+3. Select `@timestamp` as the time field.
 
 ## View logs in Discover
 
 1. Go to **Discover**.
-2. Select the index pattern you created (top-left selector).
+2. Select the index pattern (top-left dropdown).
 3. Adjust the time range (top-right) to include recent activity.
 
 ## Verify logs are flowing
 
 If you do not see logs:
 - Generate activity (browse the wiki, log in, etc.).
-- Ensure the observability profile is running: `docker compose ps`.
-- Check Logstash and OpenSearch containers for errors: `docker compose logs logstash opensearch`.
+- Ensure the observability profile is running: `canasta list` or `docker ps`.
+- Check container logs: `docker logs <id>-logstash-1` and `docker logs <id>-opensearch-1`.
+
+## Security notes
+
+- OpenSearch has security disabled (`plugins.security.disabled=true`). Access
+  to the Dashboards UI is protected by Caddy's basicauth. OpenSearch itself is
+  only accessible within the Docker network (no ports exposed to the host).
+- OpenSearch Dashboards port 5601 is not exposed to the host; access is
+  exclusively through the Caddy reverse proxy.
