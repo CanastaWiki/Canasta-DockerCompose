@@ -1,9 +1,12 @@
 # Contains private data
 /.env
 /docker-compose.override.yml
-/config/*
-/extensions/*
-/skins/*
-/images/*
-/public_assets/*
-!/public_assets/.gitkeep
+
+# Created by Canasta CLI during installation
+/my.cnf
+/_initdb/
+/config/
+/extensions/
+/skins/
+/images/
+/public_assets/
