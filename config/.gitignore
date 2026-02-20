@@ -1,6 +1,7 @@
 # Ignore everything in this directory
-*
+/*
 # Except this file
 !.gitignore
 !default.vcl
 !SettingsTemplate.php
+!logstash
